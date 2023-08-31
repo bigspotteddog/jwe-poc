@@ -29,7 +29,7 @@ public class JwtServiceTest {
         "twIDAQAB\n" + //
         "-----END PUBLIC KEY-----";
     DecodedJWT jwt = decodeAndValidate(token, publicKey);
-    System.out.println(jwt.getClaims().toString());
+    System.out.println(jwt.getClaims());
   }
 
   public DecodedJWT decodeAndValidate(String token, String publicKey)
@@ -39,9 +39,9 @@ public class JwtServiceTest {
         .replaceAll(System.lineSeparator(), "")
         .replace("-----END PUBLIC KEY-----", "");
 
-    byte[] publicKeyByteArr = Base64.getDecoder().decode(publicKeyPEM);
+    byte[] publicKeyByteArray = Base64.getDecoder().decode(publicKeyPEM);
     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-    RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyByteArr));
+    RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyByteArray));
 
     Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, null);
     JWTVerifier verifier = JWT.require(algorithm)
