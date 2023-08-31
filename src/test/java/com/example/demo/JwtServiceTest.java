@@ -1,20 +1,15 @@
 package com.example.demo;
 
-import java.security.interfaces.RSAPublicKey;
-import java.util.Base64;
-
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
-
-import java.security.*;
-import java.security.spec.*;
 
 @SpringBootTest
 public class JwtServiceTest {
+
+  @Autowired
+  private JwtService jwtService;
 
   @Test
   public void testDecodeAndValidate() throws Exception {
@@ -28,27 +23,7 @@ public class JwtServiceTest {
         "ctUxZG8M4QJIx3S6Aughd3RZC4Ca5Ae9fd8L8mlNYBCrQhOZ7dS0f4at4arlLcaj\n" + //
         "twIDAQAB\n" + //
         "-----END PUBLIC KEY-----";
-    DecodedJWT jwt = decodeAndValidate(token, publicKey);
+    DecodedJWT jwt = jwtService.decodeAndValidate(token, publicKey);
     System.out.println(jwt.getClaims());
-  }
-
-  public DecodedJWT decodeAndValidate(String token, String publicKey)
-      throws NoSuchAlgorithmException, InvalidKeySpecException {
-    String publicKeyPEM = publicKey
-        .replace("-----BEGIN PUBLIC KEY-----", "")
-        .replaceAll(System.lineSeparator(), "")
-        .replace("-----END PUBLIC KEY-----", "");
-
-    byte[] publicKeyByteArray = Base64.getDecoder().decode(publicKeyPEM);
-    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-    RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyByteArray));
-
-    Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, null);
-    JWTVerifier verifier = JWT.require(algorithm)
-        .acceptLeeway(6 * 60 * 60 * 1000)
-        .withClaim("iss", "https://sts.windows.net/439dd1b8-73b6-4ae0-903d-521f615914b3/")
-        .build();
-    DecodedJWT jwt = verifier.verify(token);
-    return jwt;
   }
 }
