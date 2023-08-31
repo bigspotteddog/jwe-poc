@@ -1,40 +1,22 @@
 package com.example.demo;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.Date;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.nimbusds.jwt.SignedJWT;
-
 @SpringBootTest
 public class JwtServiceTest {
+
   @Autowired
   private JwtService jwtService;
 
   @Test
-  public void testJwtPlusJwe() throws Exception {
-    // setup
-    String encodedSecretKey = jwtService.createEncodedSecretKey();
-    jwtService.setEncodedSecretKey(encodedSecretKey);
+  public void test() throws Exception {
+    String secret = "gEf8Q~IUjmOWzZReKPuQKq3LS2l_mFWQSl9nEap-";
+    String token = "eyJ0eXAiOiJKV1QiLCJub25jZSI6ImVVNWZ0SEFKTEFpb2xiQUJzWkZILU5wMU0tQktYNGp2dk9Qa1lyeFdTNDAiLCJhbGciOiJSUzI1NiIsIng1dCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyIsImtpZCI6Ii1LSTNROW5OUjdiUm9meG1lWm9YcWJIWkdldyJ9.eyJhdWQiOiJodHRwczovL2dyYXBoLm1pY3Jvc29mdC5jb20iLCJpc3MiOiJodHRwczovL3N0cy53aW5kb3dzLm5ldC80MzlkZDFiOC03M2I2LTRhZTAtOTAzZC01MjFmNjE1OTE0YjMvIiwiaWF0IjoxNjkzNDg5Mzk4LCJuYmYiOjE2OTM0ODkzOTgsImV4cCI6MTY5MzQ5MzI5OCwiYWlvIjoiRTJGZ1lOaXNVaDN3TFB4ajNScGZZMW5tMDY0OEFBPT0iLCJhcHBfZGlzcGxheW5hbWUiOiJTTUJEb21haW5TZXJ2aWNlc19VQVRfOTkwOCIsImFwcGlkIjoiN2JlOTEwNTQtMjNlMi00NDNmLThmZTQtYzcxNDJlNGRkY2Y2IiwiYXBwaWRhY3IiOiIxIiwiaWRwIjoiaHR0cHM6Ly9zdHMud2luZG93cy5uZXQvNDM5ZGQxYjgtNzNiNi00YWUwLTkwM2QtNTIxZjYxNTkxNGIzLyIsImlkdHlwIjoiYXBwIiwib2lkIjoiYzBjNDE3YzQtODgxNS00OWEzLTkyYWItODY0MjBiMGEyYTY2IiwicmgiOiIwLkFSY0F1TkdkUTdaejRFcVFQVklmWVZrVXN3TUFBQUFBQUFBQXdBQUFBQUFBQUFBWEFBQS4iLCJyb2xlcyI6WyJVc2VyLlJlYWQuQWxsIl0sInN1YiI6ImMwYzQxN2M0LTg4MTUtNDlhMy05MmFiLTg2NDIwYjBhMmE2NiIsInRlbmFudF9yZWdpb25fc2NvcGUiOiJOQSIsInRpZCI6IjQzOWRkMWI4LTczYjYtNGFlMC05MDNkLTUyMWY2MTU5MTRiMyIsInV0aSI6IlpmVldtYzVKdDBxMHFxSWRvLUdSQUEiLCJ2ZXIiOiIxLjAiLCJ3aWRzIjpbIjA5OTdhMWQwLTBkMWQtNGFjYi1iNDA4LWQ1Y2E3MzEyMWU5MCJdLCJ4bXNfdGNkdCI6MTQ1NjMyNTI1OX0.TovsdkLM_RNi70PD2q8v8Q7Y2ujp3wH6IuDfdDXl-3nkPhiHV7SrHjN0vl169vMkekhuI63lenpTwAhyyJODUacwrR1CP1Yf0NaCjduAT8GUqkt6CfB4_jgdR51BE4AZgguzri_eN7qHYhm0a9M1VLGZZw839q60PqYaX18Ec-fvmg-9JMXRVi_XjKB5xJ8SNo4Fvq6O80MKnw5gu0hO1_-xbDuikpeIU7Xvx8xINAO-UL53PbqD94eeOux8FTLnQubcNfyte8e8hXvo5zLEzhWUVDWgfzr0svx6JC4Jm0kTZ1rHO42V_zKw8JsECJnlsZex61umnY6q34ldsfHeWw";
+    String result = jwtService.decodeJWTToken(token, secret);
 
-    String encodedHmacKey = jwtService.createEncodedHmacKey();
-    jwtService.setEncodedHmacKey(encodedHmacKey);
-
-    String subject = "replace.me@gmail.com";
-    String issuer = "example.com";
-
-    // test
-    String encryptedJweToken = jwtService.createEncryptedJweToken(subject, issuer);
-    SignedJWT verifiedJwtToken = jwtService.createVerifiedJwtToken(encryptedJweToken);
-
-    // verify
-    assertEquals(subject, verifiedJwtToken.getJWTClaimsSet().getSubject());
-    assertEquals(issuer, verifiedJwtToken.getJWTClaimsSet().getIssuer());
-    assertTrue(new Date().before(verifiedJwtToken.getJWTClaimsSet().getExpirationTime()));
+    assertEquals("", result);
   }
 }
