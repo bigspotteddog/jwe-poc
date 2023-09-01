@@ -41,6 +41,7 @@ public class ServiceAController {
 
     HttpGet get = new HttpGet("http://localhost:8080/records?who=" + who);
     get.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+    get.addHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON));
     String response = send(get);
     log.info("Received record for: ");
     log.info("  " + response);
@@ -58,6 +59,7 @@ public class ServiceAController {
 
   private String getToken(Map<String, Object> body) throws IOException, ClientProtocolException {
     HttpPost request = new HttpPost("http://localhost:8080/login");
+    request.addHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON));
     String JSON_STRING = new Gson().toJson(body);
     HttpEntity stringEntity = new StringEntity(JSON_STRING, ContentType.APPLICATION_JSON);
     request.setEntity(stringEntity);
