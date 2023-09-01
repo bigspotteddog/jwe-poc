@@ -59,6 +59,7 @@ public class ServiceAController {
 
   private String getToken(Map<String, Object> body) throws IOException, ClientProtocolException {
     HttpPost request = new HttpPost("http://localhost:8080/login");
+    request.addHeader("Content-Type", String.valueOf(ContentType.APPLICATION_JSON));
     request.addHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON));
     String JSON_STRING = new Gson().toJson(body);
     HttpEntity stringEntity = new StringEntity(JSON_STRING, ContentType.APPLICATION_JSON);
