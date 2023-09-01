@@ -1,11 +1,14 @@
-package com.example.demo;
+package com.example.demo.services;
 
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
@@ -18,21 +21,41 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 public class JwtService {
   public DecodedJWT decodeAndValidate(String token, String publicKey)
       throws NoSuchAlgorithmException, InvalidKeySpecException {
-    String publicKeyPEM = publicKey
+
+    publicKey = publicKey
         .replace("-----BEGIN PUBLIC KEY-----", "")
         .replaceAll(System.lineSeparator(), "")
         .replace("-----END PUBLIC KEY-----", "");
 
-    byte[] publicKeyByteArray = Base64.getDecoder().decode(publicKeyPEM);
+    byte[] publicKeyByteArray = Base64.getDecoder().decode(publicKey);
     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
     RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyByteArray));
 
     Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, null);
     JWTVerifier verifier = JWT.require(algorithm)
         .acceptLeeway(6 * 60 * 60 * 1000)
-        .withClaim("iss", "https://sts.windows.net/439dd1b8-73b6-4ae0-903d-521f615914b3/")
         .build();
     DecodedJWT jwt = verifier.verify(token);
     return jwt;
+  }
+
+  public String createToken(Map<String, Object> claims, String privateKey)
+      throws InvalidKeySpecException, NoSuchAlgorithmException {
+
+    KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+    RSAPrivateKey rsaPrivateKey = null;
+
+    privateKey = privateKey
+        .replace("-----BEGIN PRIVATE KEY-----", "")
+        .replaceAll(System.lineSeparator(), "")
+        .replace("-----END PRIVATE KEY-----", "");
+
+    byte[] privateKeyByteArray = Base64.getDecoder().decode(privateKey);
+    PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateKeyByteArray);
+    rsaPrivateKey = (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
+
+    Algorithm algorithm = Algorithm.RSA256(null, rsaPrivateKey);
+    String token = JWT.create().withPayload(claims).sign(algorithm);
+    return token;
   }
 }
