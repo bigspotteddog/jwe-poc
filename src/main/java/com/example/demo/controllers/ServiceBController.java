@@ -66,6 +66,10 @@ public class ServiceBController {
 
     log.info("Verifying claims...");
     Map<String, Claim> claims = jwt.getClaims();
+    if (claims.get("exp").asLong() * 1000 < System.currentTimeMillis()) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+    }
+
     if (claims.get("roles") == null) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
     }

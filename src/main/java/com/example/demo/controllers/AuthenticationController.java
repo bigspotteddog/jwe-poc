@@ -92,12 +92,12 @@ public class AuthenticationController {
     }
 
     long now = new Date().getTime() / 1000;
-    long inFiveMinutes = (System.currentTimeMillis() + (5 * 60 * 1000)) / 1000;
+    long inOneMinute = (System.currentTimeMillis() + (1 * 60 * 1000)) / 1000;
 
     Map<String, Object> claims = new HashMap<>();
     claims.put("iss", "https://sts.windows.net/439dd1b8-73b6-4ae0-903d-521f615914b3/");
     claims.put("iat", now);
-    claims.put("exp", inFiveMinutes);
+    claims.put("exp", inOneMinute);
     claims.put("jti", UUID.randomUUID().toString());
     claims.put("sub", username);
     claims.put("aud", "https://graph.microsoft.com");

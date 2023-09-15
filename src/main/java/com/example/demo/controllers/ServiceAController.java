@@ -21,30 +21,43 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.client.HttpStatusCodeException;
+
 import com.google.gson.Gson;
 
 @Controller
 public class ServiceAController {
   private static final Logger log = Logger.getLogger(ServiceAController.class.getName());
 
+  private String token = null;
+
   @Scheduled(fixedRate = 5000)
   public void makeRequest() throws ClientProtocolException, IOException {
 
-    String token = login();
+    if (token == null) {
+      token = login();
+    }
 
     List<String> list = new ArrayList<>(ServiceBController.records.keySet());
     int randomNum = ThreadLocalRandom.current().nextInt(0, list.size());
     String who = list.get(randomNum);
     log.info("Request record for: " + who);
 
-    HttpGet get = new HttpGet("http://localhost:8080/records?who=" + who);
-    get.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-    get.addHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON));
-    String response = send(get);
-    log.info("Received record for: ");
-    log.info("  " + response);
+    for (int tries = 0; tries < 2; tries++) {
+      HttpGet get = new HttpGet("http://localhost:8080/records?who=" + who);
+      get.setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+      get.addHeader("Accept", String.valueOf(ContentType.APPLICATION_JSON));
+      try {
+        String response = send(get);
+        log.info("Received record for: ");
+        log.info("  " + response);
+      } catch (HttpStatusCodeException e) {
+        token = login();
+      }
+    }
   }
 
   private String login() throws IOException, ClientProtocolException {
@@ -72,6 +85,10 @@ public class ServiceAController {
   private String send(HttpUriRequest request) throws IOException, ClientProtocolException {
     try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
       CloseableHttpResponse response = httpclient.execute(request);
+      if (response.getStatusLine().getStatusCode() == 401) {
+        throw new HttpStatusCodeException(HttpStatusCode.valueOf(401), "Unauthorized") {
+        };
+      }
       InputStream inputStream = response.getEntity().getContent();
 
       try (Scanner s = new Scanner(inputStream).useDelimiter("\\A")) {

@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.example.demo.services.JwtService;
 
 @SpringBootTest
 public class JwtServiceTest {
