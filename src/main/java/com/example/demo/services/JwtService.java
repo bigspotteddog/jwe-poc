@@ -32,9 +32,7 @@ public class JwtService {
     RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyByteArray));
 
     Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, null);
-    JWTVerifier verifier = JWT.require(algorithm)
-        .acceptLeeway(6 * 60 * 60 * 1000)
-        .build();
+    JWTVerifier verifier = JWT.require(algorithm).build();
     DecodedJWT jwt = verifier.verify(token);
     return jwt;
   }
