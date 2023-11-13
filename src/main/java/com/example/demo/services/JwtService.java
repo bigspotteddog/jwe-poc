@@ -12,14 +12,41 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
+import com.auth0.jwk.Jwk;
+import com.auth0.jwk.JwkException;
+import com.auth0.jwk.JwkProvider;
+import com.auth0.jwk.UrlJwkProvider;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 
 @Service
 public class JwtService {
-  public DecodedJWT decodeAndValidate(String token, String publicKey)
+  public DecodedJWT decodeAndValidate(String token) {
+    JwkProvider provider = new UrlJwkProvider("https://sonatype-mtiq-test.us.auth0.com/");
+    try {
+      DecodedJWT jwt = JWT.decode(token);
+      Jwk jwk = provider.get(jwt.getKeyId());
+      Algorithm algorithm = Algorithm.RSA256((RSAPublicKey) jwk.getPublicKey(), null);
+      JWTVerifier verifier = JWT.require(algorithm)
+          .withIssuer("https://sonatype-mtiq-test.us.auth0.com/")
+          .build();
+
+      jwt = verifier.verify(token);
+      return jwt;
+    } catch (JWTVerificationException e) {
+      // Invalid signature/claims
+      e.printStackTrace();
+    } catch (JwkException e) {
+      // invalid JWT token
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public DecodedJWT decodeAndValidate_old(String token, String publicKey)
       throws NoSuchAlgorithmException, InvalidKeySpecException {
 
     publicKey = publicKey
@@ -29,12 +56,17 @@ public class JwtService {
 
     byte[] publicKeyByteArray = Base64.getDecoder().decode(publicKey);
     KeyFactory keyFactory = KeyFactory.getInstance("RSA");
-    RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyByteArray));
 
-    Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, null);
-    JWTVerifier verifier = JWT.require(algorithm).build();
-    DecodedJWT jwt = verifier.verify(token);
-    return jwt;
+    try {
+      RSAPublicKey rsaPublicKey = (RSAPublicKey) keyFactory.generatePublic(new X509EncodedKeySpec(publicKeyByteArray));
+      Algorithm algorithm = Algorithm.RSA256(rsaPublicKey, null);
+      JWTVerifier verifier = JWT.require(algorithm).build();
+      DecodedJWT jwt = verifier.verify(token);
+      return jwt;
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   public String createToken(Map<String, Object> claims, String privateKey)

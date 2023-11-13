@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,10 +60,48 @@ public class ServiceBController {
     String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
     authorization = authorization.substring("Bearer ".length());
 
-    HttpGet get = new HttpGet("http://localhost:8080/publickey");
+    DecodedJWT jwt = jwtService.decodeAndValidate(authorization);
+    log.info("  from principal: " + jwt.getSubject());
+
+    log.info("Verifying claims...");
+    Map<String, Claim> claims = jwt.getClaims();
+    if (claims.get("exp").asLong() * 1000 < System.currentTimeMillis()) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+    }
+
+    Claim audience = claims.get("aud");
+    String[] audiences = audience.asArray(String.class);
+    if (!new HashSet<String>(Arrays.asList(audiences)).contains("https://a92b-174-68-151-201.ngrok-free.app")) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+    }
+    log.info("  " + jwt.getSubject());
+
+    String value = (String) records.get(who);
+
+    if (value == null) {
+      throw new HttpResponseException(404, "Not found");
+    }
+
+    log.info("Returning record for: " + who);
+
+    Map<String, Object> map = new HashMap<>();
+    map.put("name", value);
+    return new Gson().toJson(map);
+  }
+
+  @GetMapping("/records-old")
+  @ResponseBody
+  public String getRecord_old(@RequestParam String who, HttpServletRequest request)
+      throws NoSuchAlgorithmException, InvalidKeySpecException, ClientProtocolException, IOException {
+    log.info("Received request...");
+
+    String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+    authorization = authorization.substring("Bearer ".length());
+
+    HttpGet get = new HttpGet("https://a92b-174-68-151-201.ngrok-free.app/publickey");
     String publicKey = send(get);
 
-    DecodedJWT jwt = jwtService.decodeAndValidate(authorization, publicKey);
+    DecodedJWT jwt = jwtService.decodeAndValidate_old(authorization, publicKey);
     log.info("  from principal: " + jwt.getSubject());
 
     log.info("Verifying claims...");

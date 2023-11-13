@@ -34,7 +34,7 @@ public class ServiceAController {
 
   private String token = null;
 
-  @Scheduled(fixedRate = 5000)
+  // @Scheduled(fixedRate = 5000)
   public void makeRequest() throws ClientProtocolException, IOException {
 
     if (token == null) {

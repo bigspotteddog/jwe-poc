@@ -74,7 +74,7 @@ public class JwtServiceTest {
     claims.put("app_displayname", "SMBDomainServices_UAT_9908");
 
     String token = jwtService.createToken(claims, privateKey);
-    DecodedJWT jwt = jwtService.decodeAndValidate(token, publicKey);
+    DecodedJWT jwt = jwtService.decodeAndValidate(token);
     System.out.println(jwt.getClaims());
   }
 }

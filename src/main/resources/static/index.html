@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bootstrap demo</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <h1>Hello, world!</h1>
+    <button type="button" id="login">Login</button>
+    <button type="button" id="logout">Logout</button>
+    <button type="button" id="callApi">Call API</button>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+    <script type="module">
+      const auth0Client = await auth0.createAuth0Client({
+        domain: "sonatype-mtiq-test.us.auth0.com",
+        clientId: "s63k9NDdsZpIHXqwYIljFeFncYXjGbY9",
+        authorizationParams: {
+          audience: "https://a92b-174-68-151-201.ngrok-free.app",
+        },
+      });
+
+      const loginButton = document.getElementById("login");
+      loginButton.addEventListener("click", async (e) => {
+        await auth0Client.loginWithRedirect({
+          authorizationParams: {
+            redirect_uri: "https://a92b-174-68-151-201.ngrok-free.app",
+          },
+        });
+      });
+
+      document.getElementById("callApi").addEventListener("click", async () => {
+        console.log(auth0Client.accessToken);
+        const accessToken = await auth0Client.getTokenSilently();
+        const result = await fetch("https://a92b-174-68-151-201.ngrok-free.app/records?who=bob_roberts", {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + accessToken,
+          },
+        });
+        const data = await result.json();
+        console.log(data);
+      });
+      if (
+        location.search.includes("state=") &&
+        (location.search.includes("code=") ||
+          location.search.includes("error="))
+      ) {
+        await auth0Client.handleRedirectCallback();
+        window.history.replaceState({}, document.title, "/");
+
+        const isAuthenticated = await auth0Client.isAuthenticated();
+        const userProfile = await auth0Client.getUser();
+        console.log(userProfile);
+      }
+    </script>
+  </body>
+</html>

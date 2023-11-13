@@ -20,19 +20,41 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.example.demo.services.JwtService;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 @Controller
 public class AuthenticationController {
   private static final Logger log = Logger.getLogger(AuthenticationController.class.getName());
 
-  private String publicKey = "-----BEGIN PUBLIC KEY-----\n" + //
-      "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6S7asUuzq5Q/3U9rbs+P\n" + //
-      "kDVIdjgmtgWreG5qWPsC9xXZKiMV1AiV9LXyqQsAYpCqEDM3XbfmZqGb48yLhb/X\n" + //
-      "qZaKgSYaC/h2DjM7lgrIQAp9902Rr8fUmLN2ivr5tnLxUUOnMOc2SQtr9dgzTONY\n" + //
-      "W5Zu3PwyvAWk5D6ueIUhLtYzpcB+etoNdL3Ir2746KIy/VUsDwAM7dhrqSK8U2xF\n" + //
-      "CGlau4ikOTtvzDownAMHMrfE7q1B6WZQDAQlBmxRQsyKln5DIsKv6xauNsHRgBAK\n" + //
-      "ctUxZG8M4QJIx3S6Aughd3RZC4Ca5Ae9fd8L8mlNYBCrQhOZ7dS0f4at4arlLcaj\n" + //
-      "twIDAQAB\n" + //
-      "-----END PUBLIC KEY-----";
+  private String publicKey = "-----BEGIN CERTIFICATE-----\r\n" + //
+      "MIIDGDCCAgCgAwIBAgIIYTtOcA3IMukwDQYJKoZIhvcNAQELBQAwKjEoMCYGA1UE\r\n" + //
+      "AxMfc29uYXR5cGUtbXRpcS10ZXN0LnVzLmF1dGgwLmNvbTAeFw0yMzAzMjkyMTM0\r\n" + //
+      "MjdaFw0zNjEyMDUyMTM0MjdaMCoxKDAmBgNVBAMTH3NvbmF0eXBlLW10aXEtdGVz\r\n" + //
+      "dC51cy5hdXRoMC5jb20wggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDZ\r\n" + //
+      "jEWGuK2x9ZpnE6R6WEU21KEsWh2HhpABh3twl3lwBPefCAoUNCQP9sQpNx5n9b19\r\n" + //
+      "XYBS8YEtsR9KZ9ZUHIkYAYQXOOZakSa2FR0EQVsqc8ZFf9vpVijcHmF97DM20E6F\r\n" + //
+      "h09pcxRT+zlXon6clI4GRZMoWf62pJ8Op5VsgY8XQ9nhJsl0s6ZpIcUQaiW529Ce\r\n" + //
+      "+7VUjOZzZ4PwAwTpPeqNmnpY60L4N+XqsSsnSFASt4YlgWexQuFUkCAENP0yOP9m\r\n" + //
+      "CGHgGtqFq6WNTxu0j5ts3JZp1+nQvJ46fuUUdkixD4AkJdj7rPr08OUJ7Gp8oypH\r\n" + //
+      "7A6O6nDmviX7h3IUlPLxAgMBAAGjQjBAMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0O\r\n" + //
+      "BBYEFOxXCR6W2EYG6dHOyB8nTLoQk1GFMA4GA1UdDwEB/wQEAwIChDANBgkqhkiG\r\n" + //
+      "9w0BAQsFAAOCAQEAaEAl6jl+DZanK8fQQZlW4BHDPqdcOHD49CbKkFhaaVCLFHZu\r\n" + //
+      "S8ggeRPqxcGbWxyKp8ui2jqyqDmp0wbmJzGjS0CpdC+Jsq/J7Lu8RnmKnE5IY4x6\r\n" + //
+      "BbX10doVTfJcS6CyJvZ5cg21Hjamk28TTjbr1J+F/cxDg1bJebRWFWgt59hC29AW\r\n" + //
+      "MocauTQIFjBs7y0e5GLJO4ipoWpzbDILuRCmt7WR56jSsDQ3gFkfNzd6tixmUFHS\r\n" + //
+      "HqD3l6kdCC5JNNxMbf6uP3hkK5VJRXczV5cBqg/QrgpgafNO4Spk3wIDmX45DbsQ\r\n" + //
+      "M/4dYN5L5k0QlEEmfDKS8NTShCdLEy2H/Q6M5w==\r\n" + //
+      "-----END CERTIFICATE-----";
+  
+  // private String publicKey = "-----BEGIN PUBLIC KEY-----\n" + //
+  //     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA6S7asUuzq5Q/3U9rbs+P\n" + //
+  //     "kDVIdjgmtgWreG5qWPsC9xXZKiMV1AiV9LXyqQsAYpCqEDM3XbfmZqGb48yLhb/X\n" + //
+  //     "qZaKgSYaC/h2DjM7lgrIQAp9902Rr8fUmLN2ivr5tnLxUUOnMOc2SQtr9dgzTONY\n" + //
+  //     "W5Zu3PwyvAWk5D6ueIUhLtYzpcB+etoNdL3Ir2746KIy/VUsDwAM7dhrqSK8U2xF\n" + //
+  //     "CGlau4ikOTtvzDownAMHMrfE7q1B6WZQDAQlBmxRQsyKln5DIsKv6xauNsHRgBAK\n" + //
+  //     "ctUxZG8M4QJIx3S6Aughd3RZC4Ca5Ae9fd8L8mlNYBCrQhOZ7dS0f4at4arlLcaj\n" + //
+  //     "twIDAQAB\n" + //
+  //     "-----END PUBLIC KEY-----";
 
   private String privateKey = "-----BEGIN PRIVATE KEY-----\n" + //
       "MIIEwAIBADANBgkqhkiG9w0BAQEFAASCBKowggSmAgEAAoIBAQDpLtqxS7OrlD/d\n" + //
@@ -111,5 +133,12 @@ public class AuthenticationController {
     String token = jwtService.createToken(claims, privateKey);
     log.info(username + " authenticated");
     return token;
+  }
+
+  @GetMapping("/signin")
+  @ResponseBody
+  public String signin(HttpServletRequest request) {
+    log.info("signin");
+    return "hello";
   }
 }
