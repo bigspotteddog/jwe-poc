@@ -69,6 +69,11 @@ public class ServiceBController {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
     }
 
+    Claim issuer = claims.get("iss");
+    if (!"https://sonatype-mtiq-test.us.auth0.com/".equals(issuer.asString())) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+    }
+
     Claim audience = claims.get("aud");
     String[] audiences = audience.asArray(String.class);
     if (!new HashSet<String>(Arrays.asList(audiences)).contains("https://a92b-174-68-151-201.ngrok-free.app")) {
