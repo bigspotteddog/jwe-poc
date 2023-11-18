@@ -24,47 +24,79 @@
     ></script>
     <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
     <script type="module">
-      const auth0Client = await auth0.createAuth0Client({
-        domain: "sonatype-mtiq-test.us.auth0.com",
-        clientId: "s63k9NDdsZpIHXqwYIljFeFncYXjGbY9",
-        authorizationParams: {
-          audience: "https://a92b-174-68-151-201.ngrok-free.app",
-        },
-      });
+        const checkLogin = async () => {
+          try {
+            const token = await auth0Client.getTokenSilently();
+            await profile();
+            return token;
+          } catch (err) {
+            await auth0Client.loginWithRedirect({
+              authorizationParams: {
+                redirect_uri: "https://3f65-174-68-151-201.ngrok-free.app",
+              },
+            });
+          }
+        };
 
-      const loginButton = document.getElementById("login");
-      loginButton.addEventListener("click", async (e) => {
-        await auth0Client.loginWithRedirect({
+        const profile = async () => {
+          const isAuthenticated = await auth0Client.isAuthenticated();
+          const userProfile = await auth0Client.getUser();
+          console.log(userProfile);
+        }
+
+        const auth0Client = await auth0.createAuth0Client({
+          domain: "sonatype-mtiq-test.us.auth0.com",
+          clientId: "s63k9NDdsZpIHXqwYIljFeFncYXjGbY9",
           authorizationParams: {
-            redirect_uri: "https://a92b-174-68-151-201.ngrok-free.app",
+            audience: "https://3f65-174-68-151-201.ngrok-free.app",
           },
         });
-      });
 
-      document.getElementById("callApi").addEventListener("click", async () => {
-        console.log(auth0Client.accessToken);
-        const accessToken = await auth0Client.getTokenSilently();
-        const result = await fetch("https://a92b-174-68-151-201.ngrok-free.app/records?who=bob_roberts", {
-          method: "GET",
-          headers: {
-            Authorization: "Bearer " + accessToken,
-          },
+        const loginButton = document.getElementById("login");
+        loginButton.addEventListener("click", async (e) => {
+          await checkLogin();
         });
-        const data = await result.json();
-        console.log(data);
-      });
-      if (
-        location.search.includes("state=") &&
-        (location.search.includes("code=") ||
-          location.search.includes("error="))
-      ) {
-        await auth0Client.handleRedirectCallback();
-        window.history.replaceState({}, document.title, "/");
 
-        const isAuthenticated = await auth0Client.isAuthenticated();
-        const userProfile = await auth0Client.getUser();
-        console.log(userProfile);
-      }
+        const logoutButton = document.getElementById("logout");
+        logoutButton.addEventListener("click", async (e) => {
+          auth0Client.logout({
+            returnTo: "https://3f65-174-68-151-201.ngrok-free.app",
+            clientID: "s63k9NDdsZpIHXqwYIljFeFncYXjGbY9",
+          });
+        });
+
+        document.getElementById("callApi").addEventListener("click", async () => {
+          try {
+            const token = await checkLogin();
+            if (token) {
+              const result = await fetch(
+                "https://3f65-174-68-151-201.ngrok-free.app/records?who=bob_roberts",
+                {
+                  method: "GET",
+                  headers: {
+                    Authorization: "Bearer " + token,
+                  },
+                }
+              );
+              const data = await result.json();
+              console.log(data);
+            }
+          } catch (err) {
+            console.log(err);
+          }
+        });
+
+        if (
+          location.search.includes("state=") &&
+          (location.search.includes("code=") ||
+            location.search.includes("error="))
+        ) {
+          await auth0Client.handleRedirectCallback();
+          window.history.replaceState({}, document.title, "/");
+          await profile();
+        } else {
+          await checkLogin();
+        }
     </script>
   </body>
 </html>

@@ -76,7 +76,7 @@ public class ServiceBController {
 
     Claim audience = claims.get("aud");
     String[] audiences = audience.asArray(String.class);
-    if (!new HashSet<String>(Arrays.asList(audiences)).contains("https://a92b-174-68-151-201.ngrok-free.app")) {
+    if (!new HashSet<String>(Arrays.asList(audiences)).contains("https://3f65-174-68-151-201.ngrok-free.app")) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
     }
     log.info("  " + jwt.getSubject());
@@ -103,7 +103,7 @@ public class ServiceBController {
     String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
     authorization = authorization.substring("Bearer ".length());
 
-    HttpGet get = new HttpGet("https://a92b-174-68-151-201.ngrok-free.app/publickey");
+    HttpGet get = new HttpGet("https://3f65-174-68-151-201.ngrok-free.app/publickey");
     String publicKey = send(get);
 
     DecodedJWT jwt = jwtService.decodeAndValidate_old(authorization, publicKey);
