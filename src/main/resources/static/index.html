@@ -32,7 +32,7 @@
           } catch (err) {
             await auth0Client.loginWithRedirect({
               authorizationParams: {
-                redirect_uri: "https://3f65-174-68-151-201.ngrok-free.app",
+                redirect_uri: "https://andres-dev-1.mtiq.local:8443",
               },
             });
           }
@@ -46,10 +46,10 @@
 
         const auth0Client = await auth0.createAuth0Client({
           domain: "sonatype-mtiq-test.us.auth0.com",
-          clientId: "s63k9NDdsZpIHXqwYIljFeFncYXjGbY9",
-          authorizationParams: {
-            audience: "https://3f65-174-68-151-201.ngrok-free.app",
-          },
+          clientId: "O0fR1R9sDGyxkBst6ITGmcpa7d4mCgmt",
+          // authorizationParams: {
+          //   audience: "https://andres-dev-1.mtiq.local:8443",
+          // },
         });
 
         const loginButton = document.getElementById("login");
@@ -60,8 +60,8 @@
         const logoutButton = document.getElementById("logout");
         logoutButton.addEventListener("click", async (e) => {
           auth0Client.logout({
-            returnTo: "https://3f65-174-68-151-201.ngrok-free.app",
-            clientID: "s63k9NDdsZpIHXqwYIljFeFncYXjGbY9",
+            returnTo: "https://andres-dev-1.mtiq.local:8443",
+            clientID: "O0fR1R9sDGyxkBst6ITGmcpa7d4mCgmt",
           });
         });
 
@@ -70,7 +70,7 @@
             const token = await checkLogin();
             if (token) {
               const result = await fetch(
-                "https://3f65-174-68-151-201.ngrok-free.app/records?who=bob_roberts",
+                "https://andres-dev-1.mtiq.local:8443/records?who=bob_roberts",
                 {
                   method: "GET",
                   headers: {
@@ -91,6 +91,7 @@
           (location.search.includes("code=") ||
             location.search.includes("error="))
         ) {
+          debugger
           await auth0Client.handleRedirectCallback();
           window.history.replaceState({}, document.title, "/");
           await profile();
