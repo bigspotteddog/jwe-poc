@@ -12,10 +12,15 @@
     />
   </head>
   <body>
-    <h1>Hello, world!</h1>
-    <button type="button" id="login">Login</button>
-    <button type="button" id="logout">Logout</button>
-    <button type="button" id="callApi">Call API</button>
+    <div class="container mt-4">
+      <h1>Hello, world!</h1>
+      <div class="mt-3">
+        <button type="button" id="login" class="btn btn-primary">Login</button>
+        <button type="button" id="logout" class="btn btn-secondary">Logout</button>
+        <button type="button" id="callApi" class="btn btn-success">Call API</button>
+      </div>
+      <div id="login-status" class="mt-3"></div>
+    </div>
 
     <script
       src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
@@ -42,6 +47,29 @@
           const isAuthenticated = await auth0Client.isAuthenticated();
           const userProfile = await auth0Client.getUser();
           console.log(userProfile);
+          
+          // Create or update user info display
+          let userInfoDiv = document.getElementById('user-info');
+          if (!userInfoDiv) {
+            userInfoDiv = document.createElement('div');
+            userInfoDiv.id = 'user-info';
+            userInfoDiv.className = 'mt-4 p-3 border rounded';
+            document.body.appendChild(userInfoDiv);
+          }
+          
+          if (isAuthenticated && userProfile) {
+            userInfoDiv.innerHTML = `
+              <h3>User Profile</h3>
+              <p><strong>Name:</strong> ${userProfile.name || 'N/A'}</p>
+              <p><strong>Email:</strong> ${userProfile.email || 'N/A'}</p>
+              <p><strong>Email Verified:</strong> ${userProfile.email_verified ? 'Yes' : 'No'}</p>
+              <p><strong>User ID:</strong> ${userProfile.sub || 'N/A'}</p>
+              <pre class="mt-3 bg-light p-2">${JSON.stringify(userProfile, null, 2)}</pre>
+            `;
+            userInfoDiv.style.display = 'block';
+          } else {
+            userInfoDiv.style.display = 'none';
+          }
         }
 
         const auth0Client = await auth0.createAuth0Client({
@@ -86,17 +114,40 @@
           }
         });
 
+        // Update login status display
+        const updateLoginStatus = async () => {
+          const statusDiv = document.getElementById('login-status');
+          const isAuthenticated = await auth0Client.isAuthenticated();
+          
+          if (isAuthenticated) {
+            const user = await auth0Client.getUser();
+            statusDiv.innerHTML = `<div class="alert alert-success">Logged in as: ${user.name || user.email || 'Authenticated User'}</div>`;
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('logout').style.display = 'inline-block';
+          } else {
+            statusDiv.innerHTML = '<div class="alert alert-warning">Not logged in</div>';
+            document.getElementById('login').style.display = 'inline-block';
+            document.getElementById('logout').style.display = 'none';
+          }
+        };
+
         if (
           location.search.includes("state=") &&
           (location.search.includes("code=") ||
             location.search.includes("error="))
         ) {
-          debugger
           await auth0Client.handleRedirectCallback();
           window.history.replaceState({}, document.title, "/");
           await profile();
+          await updateLoginStatus();
         } else {
-          await checkLogin();
+          try {
+            await checkLogin();
+            await updateLoginStatus();
+          } catch (e) {
+            console.error("Login check failed:", e);
+            await updateLoginStatus();
+          }
         }
     </script>
   </body>
