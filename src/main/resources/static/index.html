@@ -1,64 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Bootstrap demo</title>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-      crossorigin="anonymous"
-    />
-  </head>
-  <body>
-    <div class="container mt-4">
-      <h1>Hello, world!</h1>
-      <div class="mt-3">
-        <button type="button" id="login" class="btn btn-primary">Login</button>
-        <button type="button" id="logout" class="btn btn-secondary">Logout</button>
-        <button type="button" id="callApi" class="btn btn-success">Call API</button>
-      </div>
-      <div id="login-status" class="mt-3"></div>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bootstrap demo</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+</head>
+
+<body>
+  <div class="container mt-4">
+    <h1>Hello, world!</h1>
+    <div class="mt-3">
+      <button type="button" id="login" class="btn btn-primary">Login</button>
+      <button type="button" id="logout" class="btn btn-secondary">Logout</button>
+      <button type="button" id="callApi" class="btn btn-success">Call API</button>
     </div>
+    <div id="login-status" class="mt-3"></div>
+  </div>
 
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-      crossorigin="anonymous"
-    ></script>
-    <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
-    <script type="module">
-        const checkLogin = async () => {
-          try {
-            const token = await auth0Client.getTokenSilently();
-            await profile();
-            return token;
-          } catch (err) {
-            await auth0Client.loginWithRedirect({
-              authorizationParams: {
-                redirect_uri: "https://andres-dev-1.mtiq.local:8443",
-              },
-            });
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.0/auth0-spa-js.production.js"></script>
+  <script type="module">
+    const checkLogin = async () => {
+      try {
+        const token = await auth0Client.getTokenSilently();
+        await profile();
+        return token;
+      } catch (err) {
+        await auth0Client.loginWithRedirect({
+          authorizationParams: {
+            redirect_uri: "https://jcava-test.mtiq.local:8443/",
+            organization: "org_gJmxT4VBNZxWaryd",
           }
-        };
+        });
+      }
+    };
 
-        const profile = async () => {
-          const isAuthenticated = await auth0Client.isAuthenticated();
-          const userProfile = await auth0Client.getUser();
-          console.log(userProfile);
-          
-          // Create or update user info display
-          let userInfoDiv = document.getElementById('user-info');
-          if (!userInfoDiv) {
-            userInfoDiv = document.createElement('div');
-            userInfoDiv.id = 'user-info';
-            userInfoDiv.className = 'mt-4 p-3 border rounded';
-            document.body.appendChild(userInfoDiv);
-          }
-          
-          if (isAuthenticated && userProfile) {
-            userInfoDiv.innerHTML = `
+    const profile = async () => {
+      const isAuthenticated = await auth0Client.isAuthenticated();
+      const userProfile = await auth0Client.getUser();
+      console.log(userProfile);
+
+      // Create or update user info display
+      let userInfoDiv = document.getElementById('user-info');
+      if (!userInfoDiv) {
+        userInfoDiv = document.createElement('div');
+        userInfoDiv.id = 'user-info';
+        userInfoDiv.className = 'mt-4 p-3 border rounded';
+        document.body.appendChild(userInfoDiv);
+      }
+
+      if (isAuthenticated && userProfile) {
+        userInfoDiv.innerHTML = `
               <h3>User Profile</h3>
               <p><strong>Name:</strong> ${userProfile.name || 'N/A'}</p>
               <p><strong>Email:</strong> ${userProfile.email || 'N/A'}</p>
@@ -66,89 +63,87 @@
               <p><strong>User ID:</strong> ${userProfile.sub || 'N/A'}</p>
               <pre class="mt-3 bg-light p-2">${JSON.stringify(userProfile, null, 2)}</pre>
             `;
-            userInfoDiv.style.display = 'block';
-          } else {
-            userInfoDiv.style.display = 'none';
-          }
-        }
+        userInfoDiv.style.display = 'block';
+      } else {
+        userInfoDiv.style.display = 'none';
+      }
+    }
 
-        const auth0Client = await auth0.createAuth0Client({
-          domain: "sonatype-mtiq-test.us.auth0.com",
-          clientId: "O0fR1R9sDGyxkBst6ITGmcpa7d4mCgmt",
-          // authorizationParams: {
-          //   audience: "https://andres-dev-1.mtiq.local:8443",
-          // },
-        });
+    const auth0Client = await auth0.createAuth0Client({
+      domain: "sonatype-mtiq-test.us.auth0.com",
+      clientId: "EXbab8Zpk5w51fZSBt96bLC1ZR1BKzBa",
+    });
 
-        const loginButton = document.getElementById("login");
-        loginButton.addEventListener("click", async (e) => {
-          await checkLogin();
-        });
+    const loginButton = document.getElementById("login");
+    loginButton.addEventListener("click", async (e) => {
+      await checkLogin();
+    });
 
-        const logoutButton = document.getElementById("logout");
-        logoutButton.addEventListener("click", async (e) => {
-          auth0Client.logout({
-            returnTo: "https://andres-dev-1.mtiq.local:8443",
-            clientID: "O0fR1R9sDGyxkBst6ITGmcpa7d4mCgmt",
-          });
-        });
+    const logoutButton = document.getElementById("logout");
+    logoutButton.addEventListener("click", async (e) => {
+      auth0Client.logout({
+        returnTo: "https://jcava-test.mtiq.local:8443/",
+        clientID: "EXbab8Zpk5w51fZSBt96bLC1ZR1BKzBa",
+      });
+    });
 
-        document.getElementById("callApi").addEventListener("click", async () => {
-          try {
-            const token = await checkLogin();
-            if (token) {
-              const result = await fetch(
-                "https://andres-dev-1.mtiq.local:8443/records?who=bob_roberts",
-                {
-                  method: "GET",
-                  headers: {
-                    Authorization: "Bearer " + token,
-                  },
-                }
-              );
-              const data = await result.json();
-              console.log(data);
+    document.getElementById("callApi").addEventListener("click", async () => {
+      try {
+        const token = await checkLogin();
+        if (token) {
+          const result = await fetch(
+            "https://jcava-test.mtiq.local:8443//records?who=bob_roberts",
+            {
+              method: "GET",
+              headers: {
+                Authorization: "Bearer " + token,
+              },
             }
-          } catch (err) {
-            console.log(err);
-          }
-        });
-
-        // Update login status display
-        const updateLoginStatus = async () => {
-          const statusDiv = document.getElementById('login-status');
-          const isAuthenticated = await auth0Client.isAuthenticated();
-          
-          if (isAuthenticated) {
-            const user = await auth0Client.getUser();
-            statusDiv.innerHTML = `<div class="alert alert-success">Logged in as: ${user.name || user.email || 'Authenticated User'}</div>`;
-            document.getElementById('login').style.display = 'none';
-            document.getElementById('logout').style.display = 'inline-block';
-          } else {
-            statusDiv.innerHTML = '<div class="alert alert-warning">Not logged in</div>';
-            document.getElementById('login').style.display = 'inline-block';
-            document.getElementById('logout').style.display = 'none';
-          }
-        };
-
-        if (
-          location.search.includes("state=") &&
-          (location.search.includes("code=") ||
-            location.search.includes("error="))
-        ) {
-          await auth0Client.handleRedirectCallback();
-          window.history.replaceState({}, document.title, "/");
-          await profile();
-          await updateLoginStatus();
-        } else {
-          try {
-            await checkLogin();
-            await updateLoginStatus();
-          } catch (e) {
-            console.error("Login check failed:", e);
-            await updateLoginStatus();
-          }
+          );
+          const data = await result.json();
+          console.log(data);
         }
-    </script>
-  </body>
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    // Update login status display
+    const updateLoginStatus = async () => {
+      const statusDiv = document.getElementById('login-status');
+      const isAuthenticated = await auth0Client.isAuthenticated();
+
+      if (isAuthenticated) {
+        const user = await auth0Client.getUser();
+        statusDiv.innerHTML = `<div class="alert alert-success">Logged in as: ${user.name || user.email || 'Authenticated User'}</div>`;
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('logout').style.display = 'inline-block';
+      } else {
+        statusDiv.innerHTML = '<div class="alert alert-warning">Not logged in</div>';
+        document.getElementById('login').style.display = 'inline-block';
+        document.getElementById('logout').style.display = 'none';
+      }
+    };
+
+    if (
+      location.search.includes("state=") &&
+      (location.search.includes("code=") ||
+        location.search.includes("error="))
+    ) {
+      await auth0Client.handleRedirectCallback();
+      window.history.replaceState({}, document.title, "/");
+      await profile();
+      await updateLoginStatus();
+    } else {
+      try {
+        await checkLogin();
+        await updateLoginStatus();
+      } catch (e) {
+        console.error("Login check failed:", e);
+        await updateLoginStatus();
+      }
+    }
+  </script>
+</body>
+
 </html>
