@@ -54,32 +54,14 @@ public class ServiceBController {
   @GetMapping("/records")
   @ResponseBody
   public String getRecord(@RequestParam String who, HttpServletRequest request)
-      throws NoSuchAlgorithmException, InvalidKeySpecException, ClientProtocolException, IOException {
+      throws ClientProtocolException, IOException {
     log.info("Received request...");
 
-    String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-    authorization = authorization.substring("Bearer ".length());
-
-    DecodedJWT jwt = jwtService.decodeAndValidate(authorization);
-    log.info("  from principal: " + jwt.getSubject());
-
-    log.info("Verifying claims...");
-    Map<String, Claim> claims = jwt.getClaims();
-    if (claims.get("exp").asLong() * 1000 < System.currentTimeMillis()) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-    }
-
-    Claim issuer = claims.get("iss");
-    if (!"https://sonatype-mtiq-test.us.auth0.com/".equals(issuer.asString())) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-    }
-
-    Claim audience = claims.get("aud");
-    String[] audiences = audience.asArray(String.class);
-    if (!new HashSet<String>(Arrays.asList(audiences)).contains("https://3f65-174-68-151-201.ngrok-free.app")) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-    }
-    log.info("  " + jwt.getSubject());
+    // JWT validation is now handled by JwtAuthenticationFilter
+    // Get the validated user from request attributes
+    String user = (String) request.getAttribute("user");
+    
+    log.info("  from principal: " + user);
 
     String value = (String) records.get(who);
 
