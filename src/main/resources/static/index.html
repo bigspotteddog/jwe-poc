@@ -119,6 +119,42 @@
     <div id="login-status" class="mt-3"></div>
   </div>
 
+  <!-- Personal Access Token Modal -->
+  <div class="modal fade" id="accessTokenModal" tabindex="-1" aria-labelledby="accessTokenModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="accessTokenModalLabel">
+            <i class="bi bi-key me-2"></i>Enter Personal Access Token
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Please enter your personal access token to make API calls.
+          </div>
+          <div class="mb-3">
+            <label for="personal-access-token" class="form-label">Personal Access Token:</label>
+            <div class="input-group">
+              <input type="password" class="form-control" id="personal-access-token" placeholder="Enter your token here...">
+              <button class="btn btn-outline-secondary" type="button" id="toggle-token-visibility">
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="form-text">
+              You can create a personal access token using the "Create API Token" option in your profile menu.
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="make-api-call">Make API Call</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- API Token Modal -->
   <div class="modal fade" id="apiTokenModal" tabindex="-1" aria-labelledby="apiTokenModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -394,24 +430,97 @@
       }
     });
 
+    // Call API button - shows modal to request personal access token
     document.getElementById("callApi").addEventListener("click", async () => {
+      // Show the personal access token modal
+      const modal = new bootstrap.Modal(document.getElementById('accessTokenModal'));
+      modal.show();
+    });
+
+    // Toggle token visibility in the modal
+    document.getElementById("toggle-token-visibility").addEventListener("click", (e) => {
+      const tokenInput = document.getElementById('personal-access-token');
+      const toggleButton = e.target.closest('button');
+      const icon = toggleButton.querySelector('i');
+      
+      if (tokenInput.type === 'password') {
+        tokenInput.type = 'text';
+        icon.className = 'bi bi-eye-slash';
+      } else {
+        tokenInput.type = 'password';
+        icon.className = 'bi bi-eye';
+      }
+    });
+
+    // Make API call with personal access token
+    document.getElementById("make-api-call").addEventListener("click", async () => {
       try {
-        const token = await checkLogin();
-        if (token) {
-          const result = await fetch(
-            "https://jcava-test.mtiq.local:8443//records?who=bob_roberts",
-            {
-              method: "GET",
-              headers: {
-                Authorization: "Bearer " + token,
-              },
-            }
-          );
-          const data = await result.json();
-          console.log(data);
+        const tokenInput = document.getElementById('personal-access-token');
+        const personalToken = tokenInput.value.trim();
+        
+        if (!personalToken) {
+          alert('Please enter a personal access token');
+          return;
         }
+        
+        // Show loading state
+        const callButton = document.getElementById("make-api-call");
+        const originalText = callButton.innerHTML;
+        callButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Calling API...';
+        callButton.disabled = true;
+        
+        // Make the API call with the personal access token
+        const result = await fetch(
+          "https://jcava-test.mtiq.local:8443/records?who=bob_roberts",
+          {
+            method: "GET",
+            headers: {
+              Authorization: "Bearer " + personalToken,
+              "Content-Type": "application/json"
+            },
+          }
+        );
+        
+        // Reset button state
+        callButton.innerHTML = originalText;
+        callButton.disabled = false;
+        
+        if (result.ok) {
+          const data = await result.json();
+          console.log('API Response:', data);
+          
+          // Show success message
+          alert(`API call successful! Check the console for response data.`);
+          
+          // Close the modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('accessTokenModal'));
+          modal.hide();
+          
+          // Clear the token input for security
+          tokenInput.value = '';
+          
+        } else {
+          const errorText = await result.text().catch(() => 'Unknown error');
+          console.error('API Error:', result.status, errorText);
+          alert(`API call failed: ${result.status} ${result.statusText}\n${errorText}`);
+        }
+        
       } catch (err) {
-        console.log(err);
+        console.error('Error making API call:', err);
+        alert(`Error making API call: ${err.message}`);
+        
+        // Reset button state
+        const callButton = document.getElementById("make-api-call");
+        callButton.innerHTML = 'Make API Call';
+        callButton.disabled = false;
+      }
+    });
+
+    // Allow Enter key to submit the personal access token
+    document.getElementById("personal-access-token").addEventListener("keydown", (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById("make-api-call").click();
       }
     });
 
